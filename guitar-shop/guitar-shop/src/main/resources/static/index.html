@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guitar Shop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #16213e;
+            border-bottom: 3px solid #e94560;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #e94560;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .filter-bar {
+            background: #16213e;
+            padding: 16px 40px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .filter-bar button {
+            padding: 8px 20px;
+            border: 2px solid #e94560;
+            background: transparent;
+            color: #eee;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-bar button.active,
+        .filter-bar button:hover {
+            background: #e94560;
+            color: #fff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            padding: 32px 40px;
+        }
+
+        .card {
+            background: #16213e;
+            border-radius: 12px;
+            border: 1px solid #0f3460;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(233,69,96,0.2);
+        }
+
+        .card-type {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .type-acoustic { background: #2d6a4f; color: #b7e4c7; }
+        .type-electric { background: #6a1c2d; color: #ffb3c1; }
+
+        .card-brand {
+            font-size: 0.85rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .card-model {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            color: #bbb;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .tonewoods {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            color: #ccc;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+        }
+
+        .tonewoods span { font-weight: bold; color: #e94560; display: block; }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #e94560;
+        }
+
+        .inventory {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .inventory.low { color: #f4a261; }
+        .inventory.out { color: #e94560; }
+
+        /*.buy-btn {*/
+        /*    padding: 10px 22px;*/
+        /*    background: #e94560;*/
+        /*    color: #fff;*/
+        /*    border: none;*/
+        /*    border-radius: 8px;*/
+        /*    cursor: pointer;*/
+        /*    font-size: 0.9rem;*/
+        /*    font-weight: bold;*/
+        /*    transition: background 0.2s;*/
+        /*}*/
+
+        /*.buy-btn:hover { background: #c73652; }*/
+        /*.buy-btn:disabled {*/
+        /*    background: #444;*/
+        /*    color: #777;*/
+        /*    cursor: not-allowed;*/
+        /*}*/
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 1000;
+            max-width: 360px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success { background: #2d6a4f; color: #b7e4c7; border-left: 4px solid #52b788; }
+        .toast.error   { background: #6a1c2d; color: #ffb3c1; border-left: 4px solid #e94560; }
+
+        .loading {
+            text-align: center;
+            padding: 80px;
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🎸 Guitar Shop</h1>
+        <p>Premium acoustic and electric guitars</p>
+    </div>
+</header>
+
+<div class="filter-bar">
+    <button class="active" onclick="filterGuitars('ALL', this)">All Guitars</button>
+    <button onclick="filterGuitars('ACOUSTIC', this)">Acoustic</button>
+    <button onclick="filterGuitars('ELECTRIC', this)">Electric</button>
+</div>
+
+<div class="grid" id="guitar-grid">
+    <div class="loading">Loading guitars...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const API = '/api/guitars';
+    let allGuitars = [];
+
+    async function loadGuitars() {
+        try {
+            const res = await fetch(API);
+            if (!res.ok) throw new Error('Failed to load guitars');
+            allGuitars = await res.json();
+            renderGuitars(allGuitars);
+        } catch (err) {
+            document.getElementById('guitar-grid').innerHTML =
+                '<div class="loading">Failed to load guitars. Is the server running?</div>';
+        }
+    }
+
+    function filterGuitars(type, btn) {
+        document.querySelectorAll('.filter-bar button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filtered = type === 'ALL' ? allGuitars : allGuitars.filter(g => g.type === type);
+        renderGuitars(filtered);
+    }
+
+    function renderGuitars(guitars) {
+        const grid = document.getElementById('guitar-grid');
+        if (guitars.length === 0) {
+            grid.innerHTML = '<div class="loading">No guitars found.</div>';
+            return;
+        }
+        grid.innerHTML = guitars.map(g => buildCard(g)).join('');
+    }
+
+    function buildCard(g) {
+        const typeClass = g.type === 'ACOUSTIC' ? 'type-acoustic' : 'type-electric';
+        const inStock = g.inventory > 0;
+        const invClass = g.inventory === 0 ? 'out' : g.inventory <= 3 ? 'low' : '';
+        const invText = g.inventory === 0 ? 'Out of Stock' : `${g.inventory} in stock`;
+
+        return `
+        <div class="card" id="card-${g.id}">
+            <div>
+                <span class="card-type ${typeClass}">${g.type}</span>
+            </div>
+            <div class="card-brand">${g.brand}</div>
+            <div class="card-name">${g.modelName}</div>
+            <div class="card-model">Model: ${g.modelNumber}</div>
+            <div class="card-description">${g.description}</div>
+            <div class="tonewoods">
+                <div><span>Top</span>${g.topWood}</div>
+                <div><span>Back</span>${g.backWood}</div>
+                <div><span>Sides</span>${g.sidesWood}</div>
+            </div>
+            <div class="card-footer">
+                <div>
+                    <div class="price">$${g.price.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                    <div class="inventory ${invClass}">${invText}</div>
+                </div>
+
+            </div>
+        </div>`;
+    }
+
+
+
+    function showToast(message, type) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast ${type} show`;
+        setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
+    loadGuitars();
+</script>
+</body>
+</html>
